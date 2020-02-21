@@ -42,3 +42,13 @@ select prs.id, KeyValueOfJson.key, KeyValueOfJson.value
 from person as prs, json_each(prs.person_data) as KeyValueOfJson;
 ```
 ![](images/json_each_image.PNG)
+
+Use json_object_keys/jsonb_object_keys to get keys only:
+
+```
+select prs.id, json_object_keys(prs.person_data)
+from person as prs;
+```
+![](images/json_object_keys.PNG)
+
+
