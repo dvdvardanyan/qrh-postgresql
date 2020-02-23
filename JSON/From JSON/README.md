@@ -10,6 +10,14 @@ Get JSON object field or array element as TEXT
 
 >    ->>
 
+Get JSON object at the specified path
+
+>    #>
+
+Get JSON object at the specified path as TEXT
+
+>    #>>
+
 Example:
 
 ```
@@ -18,7 +26,8 @@ select
 	prs.person_data ->> 'first' as "First Name",
 	prs.person_data ->> 'last' as "Last Name",
 	prs.person_data -> 'employers' -> 0 ->> 'name' as "First Employer"
-from person as prs;
+from person as prs
+where prs.person_data -> 'dob' ->> 'year' = '1954';
 ```
 
 Returns JSON value pointed to by path_elems (equivalent to #> operator).
@@ -43,7 +52,8 @@ select
 	json_extract_path_text(prs.person_data, 'first') as "First Name",
 	json_extract_path_text(prs.person_data, 'last') as "Last Name",
 	json_extract_path_text(prs.person_data, 'employers', '0', 'name') as "First Employer"
-from person as prs;
+from person as prs
+where json_extract_path_text(prs.person_data, 'dob', 'year') = '1954';
 ```
 
 Result set:
