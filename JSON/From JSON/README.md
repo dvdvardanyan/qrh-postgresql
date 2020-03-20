@@ -27,7 +27,7 @@ select
 	prs.person_data ->> 'last' as "Last Name",
 	prs.person_data -> 'employers' -> 0 ->> 'name' as "First Employer"
 from person as prs
-where prs.person_data -> 'dob' ->> 'year' = '1954';
+where cast(prs.person_data -> 'dob' ->> 'year' as numeric) = 1954;
 ```
 
 Returns JSON value pointed to by path_elems (equivalent to #> operator).
@@ -53,7 +53,7 @@ select
 	json_extract_path_text(prs.person_data, 'last') as "Last Name",
 	json_extract_path_text(prs.person_data, 'employers', '0', 'name') as "First Employer"
 from person as prs
-where json_extract_path_text(prs.person_data, 'dob', 'year') = '1954';
+where cast(json_extract_path_text(prs.person_data, 'dob', 'year') as numeric) = 1954;
 ```
 
 Result set:
