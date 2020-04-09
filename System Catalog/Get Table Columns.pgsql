@@ -55,4 +55,5 @@ left outer join pg_depend as dep on dep.refobjid = tbl.oid and dep.refobjsubid =
 left outer join pg_sequence as seq on dep.objid = seq.seqrelid
 left outer join pg_class as cls on seq.seqrelid = cls.oid
 left outer join pg_description as dscr on col.attrelid = dscr.objoid and col.attnum = dscr.objsubid
-where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog');
+where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
+order by tbl.relname, col.attnum;

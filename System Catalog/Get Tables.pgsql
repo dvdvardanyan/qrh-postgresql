@@ -18,5 +18,6 @@ select
 	dscr.description as "Comment"
 from pg_class as tbl
 inner join pg_namespace as schm on tbl.relnamespace = schm.oid
-left outer join pg_description as dscr on tbl.oid = dscr.objoid
-where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog');
+left outer join pg_description as dscr on tbl.oid = dscr.objoid and dscr.objsubid = 0
+where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
+order by tbl.relname;
