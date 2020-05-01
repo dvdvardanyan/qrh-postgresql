@@ -46,7 +46,7 @@ Returns JSON value pointed to by path_elems as TEXT (equivalent to #>> operator)
 
 Example:
 
-```
+```sql
 select
 	prs.id,
 	json_extract_path_text(prs.person_data, 'first') as "First Name",
@@ -71,7 +71,7 @@ Returns set of keys in the outermost JSON object as TEXT column.
 
 Example:
 
-```
+```sql
 select prs.id, json_object_keys(prs.person_data)
 from person as prs;
 ```
@@ -98,14 +98,14 @@ Expands the outermost JSON object into a set of key/value pairs as a TEXT/TEXT c
 
 Example:
 
-```
+```sql
 select prs.id, (json_each(prs.person_data)).*
 from person as prs;
 ```
 
 Using implicit lateral join:
 
-```
+```sql
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value
 from person as prs, json_each(prs.person_data) as KeyValueOfJson;
 ```
@@ -132,7 +132,7 @@ Expands a JSON array to a set of TEXT values as a column.
 
 Example:
 
-```
+```sql
 select
 	prs.id,
 	prs.person_data ->> 'first' as "First Name",
@@ -143,7 +143,7 @@ from person as prs;
 
 Using implicit lateral join:
 
-```
+```sql
 select
 	prs.id,
 	prs.person_data ->> 'first' as "First Name",
@@ -167,7 +167,7 @@ Builds an arbitrary record from a JSON object (see note below). As with all func
 
 Example:
 
-```
+```sql
 select
 	prs.id as "Id",
 	rec.id as "Person Id",
@@ -191,7 +191,7 @@ Result set:
 
 Example:
 
-```
+```sql
 select
 	prs.id as "Id",
 	rec.id as "Person Id",
@@ -221,7 +221,7 @@ Returns target with the section designated by path replaced by new_value, or wit
 
 Example:
 
-```
+```sql
 select
 	prs.id,
 	jsonb_set(prs.person_data_b, '{employers, 0, name}', '"The Employer"', false)
@@ -236,7 +236,7 @@ Returns target with new_value inserted. If target section designated by path is 
 
 Example:
 
-```
+```sql
 select
 	prs.id,
 	jsonb_insert(prs.person_data_b, '{employers, 0}', '{ "name": "Bastil", "position": "Test", "period": { "start": "01/01/2000", "end": "12/31/2010" }}', false)
