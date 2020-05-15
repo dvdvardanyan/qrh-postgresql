@@ -39,7 +39,7 @@ select
 	col.attndims as "dimension",
 	(select array_agg((e.enumlabel) order by (e.enumsortorder)) from pg_enum as e where e.enumtypid = col.atttypid) as "Enumerates",
 	pg_get_expr(dflt.adbin, dflt.adrelid) as "Default Expression",
-	cls.relname as "Sequence Name",
+	seq.relname as "Sequence Name",
     seq.seqstart as "Sequence Start Value",
     seq.seqmin as "Sequence Min Value",
     seq.seqmax as "Sequence Max Value",
@@ -51,9 +51,23 @@ inner join pg_class as tbl on schm.oid = tbl.relnamespace
 inner join pg_attribute as col on tbl.oid = col.attrelid and col.attnum > 0
 inner join pg_type as typ on col.atttypid = typ.oid
 left outer join pg_attrdef as dflt on dflt.adrelid = tbl.oid and dflt.adnum = col.attnum
-left outer join pg_depend as dep on dep.refobjid = tbl.oid and dep.refobjsubid = col.attnum
-left outer join pg_sequence as seq on dep.objid = seq.seqrelid
-left outer join pg_class as cls on seq.seqrelid = cls.oid
+left outer join
+(
+	select
+		dep.refobjid,
+		dep.refobjsubid,
+		cls.relname,
+		seq.seqstart,
+	    seq.seqmin,
+	    seq.seqmax,
+	    seq.seqincrement,
+	    seq.seqcache
+	from pg_depend as dep
+	inner join pg_sequence as seq on dep.objid = seq.seqrelid
+	inner join pg_class as cls on seq.seqrelid = cls.oid
+) as seq
+on seq.refobjid = tbl.oid and seq.refobjsubid = col.attnum
 left outer join pg_description as dscr on col.attrelid = dscr.objoid and col.attnum = dscr.objsubid
 where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
 order by tbl.relname, col.attnum;
+
