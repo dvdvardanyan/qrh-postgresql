@@ -243,3 +243,28 @@ select
 from person as prs;
 ```
 
+### Modify every element in JSONB array
+
+Below query will update value inside a JSONB array for every aray element. It will do so, by extracting array elements into a column, updating every single row inside the column, re-building the array and updating the generated array JSONB object back to original JSONB.
+
+```sql
+update person as prs
+set person_data_b = jsonb_set
+(
+	prs.person_data_b,
+	'{employers}',
+	(
+		--> Group rows back to array
+		select jsonb_agg(employers_aggregated.updated_employer) from (
+			--> Update each row from the extracted array
+			select jsonb_set(employers.employer, '{period, end}', to_jsonb(to_char(current_date, 'MM/DD/YYYY')), false) as updated_employer
+			from (
+				--> Extract the JSONB array
+				select jsonb_array_elements(prs.person_data_b -> 'employers') as employer
+			) as employers
+		) as employers_aggregated
+	),
+	false
+)
+where prs.id = 1;
+```
