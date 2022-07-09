@@ -1,10 +1,8 @@
 # Quick Reference Handbook (QRH) - PostgreSql
 
-### Useful links
+### Resources
 
 * [Official Page](https://www.postgresql.org/)
-
-### Articles
-
 * [The Internals of PostgreSQL](https://www.interdb.jp/pg/)
-
+* [DoD Cyber Exchange - STIGs](https://public.cyber.mil/stigs/downloads/)
+* [NIST - National Checklist Program - Repositories](https://ncp.nist.gov/repository)
