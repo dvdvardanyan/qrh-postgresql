@@ -3,6 +3,7 @@ select
 	current_database() as "Database",
 	schm.nspname as "Schema",
 	tbl.relname as "Name",
+	rls.rolname as "Owner",
 	case tbl.relkind
 		when 'r' then 'Ordinary table'
 		when 'i' then 'Index'
@@ -17,8 +18,9 @@ select
 		end as "Kind",
 	dscr.description as "Comment"
 from pg_class as tbl
-inner join pg_namespace as schm
-	on tbl.relnamespace = schm.oid
+inner join pg_namespace as schm on tbl.relnamespace = schm.oid
+left outer join pg_catalog.pg_roles as rls
+	on tbl.relowner = rls.oid
 left outer join pg_description as dscr
 	on tbl.oid = dscr.objoid and dscr.objsubid = 0
 where tbl.relkind in ('r', 'p')
