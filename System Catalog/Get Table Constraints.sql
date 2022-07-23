@@ -41,6 +41,12 @@ select
 	cstr.conkey as "FK Referencing Columns",
 	cstr.confkey as "FK Referenced Columns"
 from pg_namespace as schm
-inner join pg_class as tbl on schm.oid = tbl.relnamespace
-left outer join pg_constraint as cstr on cstr.conrelid = tbl.oid and cstr.contype in ('f')
-where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog');
+inner join pg_class as tbl
+	on schm.oid = tbl.relnamespace
+left outer join pg_constraint as cstr
+	on cstr.conrelid = tbl.oid
+	and cstr.contype in ('f')
+where tbl.relkind in ('r', 'p')
+	and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
+	and tbl.relname in ('TABLE_NAME_HERE')
+order by schm.nspname, tbl.relname, cstr.conname;

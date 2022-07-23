@@ -13,7 +13,9 @@ select
 		else cast(dbase.datconnlimit as varchar(30))
 	end as "Connections Limit"
 from pg_database as dbase
-inner join pg_tablespace as tsps on dbase.dattablespace = tsps.oid
-left outer join pg_user as own on dbase.datdba = own.usesysid
+inner join pg_tablespace as tsps
+	on dbase.dattablespace = tsps.oid
+left outer join pg_user as own
+	on dbase.datdba = own.usesysid
 where dbase.datistemplate = false
 order by dbase.datname;

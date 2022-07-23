@@ -36,13 +36,16 @@ select
 	trg.tgnargs as "Function Arguments",
 	trg.tgisinternal as "Is Internal"
 from pg_catalog.pg_class as tbl
-inner join pg_catalog.pg_namespace as schm on tbl.relnamespace = schm.oid
-inner join pg_catalog.pg_trigger as trg on tbl.oid = trg.tgrelid
-left outer join pg_catalog.pg_proc as fnc on trg.tgfoid = fnc.oid
-left outer join pg_catalog.pg_namespace as fnc_schm on fnc.pronamespace = fnc_schm.oid
-where
-	tbl.relkind in ('r', 'p')
+inner join pg_catalog.pg_namespace as schm
+	on tbl.relnamespace = schm.oid
+inner join pg_catalog.pg_trigger as trg
+	on tbl.oid = trg.tgrelid
+left outer join pg_catalog.pg_proc as fnc
+	on trg.tgfoid = fnc.oid
+left outer join pg_catalog.pg_namespace as fnc_schm
+	on fnc.pronamespace = fnc_schm.oid
+where tbl.relkind in ('r', 'p')
 	and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
 	and trg.tgisinternal = false
 	and tbl.relname in ('TABLE_NAME_HERE')
-;
+order by schm.nspname, tbl.relname, trg.tgname;

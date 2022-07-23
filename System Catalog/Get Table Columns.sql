@@ -57,11 +57,19 @@ select
     seq.seqcache as "Sequence Cache",
     dscr.description as "Comment"
 from filter_options as fltr
-inner join pg_namespace as schm on (fltr.schema_name is null or fltr.schema_name = schm.nspname)
-inner join pg_class as tbl on schm.oid = tbl.relnamespace and (fltr.table_name is null or fltr.table_name = tbl.relname)
-inner join pg_attribute as col on tbl.oid = col.attrelid and col.attnum > 0
-inner join pg_type as typ on col.atttypid = typ.oid
-left outer join pg_attrdef as dflt on dflt.adrelid = tbl.oid and dflt.adnum = col.attnum
+inner join pg_namespace as schm
+	on (fltr.schema_name is null or fltr.schema_name = schm.nspname)
+inner join pg_class as tbl
+	on schm.oid = tbl.relnamespace
+	and (fltr.table_name is null or fltr.table_name = tbl.relname)
+inner join pg_attribute as col
+	on tbl.oid = col.attrelid
+	and col.attnum > 0
+inner join pg_type as typ
+	on col.atttypid = typ.oid
+left outer join pg_attrdef as dflt
+	on dflt.adrelid = tbl.oid
+	and dflt.adnum = col.attnum
 left outer join
 (
 	select
@@ -74,10 +82,16 @@ left outer join
 	    seq.seqincrement,
 	    seq.seqcache
 	from pg_depend as dep
-	inner join pg_sequence as seq on dep.objid = seq.seqrelid
-	inner join pg_class as cls on seq.seqrelid = cls.oid
+	inner join pg_sequence as seq
+		on dep.objid = seq.seqrelid
+	inner join pg_class as cls
+		on seq.seqrelid = cls.oid
 ) as seq
-on seq.refobjid = tbl.oid and seq.refobjsubid = col.attnum
-left outer join pg_description as dscr on col.attrelid = dscr.objoid and col.attnum = dscr.objsubid
-where tbl.relkind in ('r', 'p') and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
+on seq.refobjid = tbl.oid
+	and seq.refobjsubid = col.attnum
+left outer join pg_description as dscr
+	on col.attrelid = dscr.objoid
+	and col.attnum = dscr.objsubid
+where tbl.relkind in ('r', 'p')
+	and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
 order by tbl.relname, col.attnum;
