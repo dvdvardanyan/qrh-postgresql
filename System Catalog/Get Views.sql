@@ -15,7 +15,7 @@ select
         when 'f' then 'Foreign Table'
         when 'p' then 'Partitioned Table'
         when 'I' then 'Partitioned Index'
-        end as "Kind",
+    end as "Kind",
     dscr.description as "Comment",
     'alter table ' || schm.nspname || '.' || tbl.relname || ' owner to USERNAME;' as script_set_owner
 from pg_class as tbl
@@ -25,6 +25,6 @@ left outer join pg_catalog.pg_roles as rls
     on tbl.relowner = rls.oid
 left outer join pg_description as dscr
     on tbl.oid = dscr.objoid and dscr.objsubid = 0
-where tbl.relkind in ('r', 'p')
+where tbl.relkind in ('v', 'm')
     and schm.nspname not in ('pg_toast', 'information_schema', 'pg_catalog')
 order by schm.nspname, tbl.relname;
