@@ -53,16 +53,19 @@ Example:
 ```sql
 select
 	prs.id,
+	json_extract_path_text(prs.person_data, 'dob', 'year') as "Date of Birth",
 	json_extract_path_text(prs.person_data, 'first') as "First Name",
 	json_extract_path_text(prs.person_data, 'last') as "Last Name",
 	json_extract_path_text(prs.person_data, 'employers', '0', 'name') as "First Employer"
 from person as prs
-where cast(json_extract_path_text(prs.person_data, 'dob', 'year') as numeric) = 1954;
-```
+where cast(json_extract_path_text(prs.person_data, 'dob', 'year') as numeric) > 1954;```
 
 Result set:
 
-![](images/get_by_key.PNG)
+| id | Date of Birth | First Name | Last Name | First Employer |
+| --- | --- | --- | --- | --- |
+| 2 | 1964 | Linda | Det | Kartan |
+| 3 | 1955 | Dick | Plat | Kilo |
 
 ### Get JSON key
 
@@ -73,16 +76,29 @@ Returns set of keys in the outermost JSON object as TEXT column.
 (setof text) jsonb_object_keys (jsonb)
 ```
 
-Example:
+Example of using in select:
 
 ```sql
-select prs.id, json_object_keys(prs.person_data)
+select prs.id, json_object_keys(prs.person_data) as tag
 from person as prs;
+```
+
+Example of using in join:
+
+```sql
+select prs.id, keys.tag
+from person as prs
+inner join lateral json_object_keys(prs.person_data) as keys(tag) on true;
 ```
 
 Result set:
 
-![](images/json_object_keys.PNG)
+| id | tag |
+| --- | --- |
+| 1 | id |
+| 1 | first |
+| 1 | last |
+| ... | ... |
 
 ### Get JSON key/value
 
@@ -100,14 +116,14 @@ Expands the outermost JSON object into a set of key/value pairs as a TEXT/TEXT c
 (setof key text, value text) jsonb_each_text (jsonb)
 ```
 
-Example:
+Example of using in select:
 
 ```sql
 select prs.id, (json_each(prs.person_data)).*
 from person as prs;
 ```
 
-Using implicit lateral join:
+Example of using in join:
 
 ```sql
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value
@@ -122,14 +138,14 @@ Result set:
 | id | key | value |
 | --- | --- | --- |
 | 1 | id | "lidsf90394" |
-| 1	first | "John" |
-| 1	last | "Star" |
+| 1 | first | "John" |
+| 1 | last | "Star" |
 | ... | ... | ... |
 | 2 | id | "kuhasd83fdf" |
 | 2 | first | "Linda" |
 | ... | ... | ... |
 
-Using implicit lateral join with index:
+Example of using in join with index:
 
 ```sql
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value, KeyValueOfJson.index
@@ -146,8 +162,8 @@ Result set:
 | id | key | value | index |
 | --- | --- | --- | --- |
 | 1 | id | "lidsf90394" | 1 |
-| 1	first | "John" | 2 |
-| 1	last | "Star" | 3 |
+| 1 | first | "John" | 2 |
+| 1 | last | "Star" | 3 |
 | ... | ... | ... | ... |
 | 2 | id | "kuhasd83fdf" | 1 |
 | 2 | first | "Linda" | 2 |
@@ -169,7 +185,7 @@ Expands a JSON array to a set of TEXT values as a column.
 (setof text) jsonb_array_elements_text (jsonb)
 ```
 
-Example:
+Example of using in select:
 
 ```sql
 select
@@ -180,7 +196,7 @@ select
 from person as prs;
 ```
 
-Using implicit lateral join:
+Example of using in join with index:
 
 ```sql
 select
@@ -198,7 +214,13 @@ inner join lateral json_array_elements(prs.person_data -> 'employers')
 
 Result set:
 
-![](images/json_array_elements.PNG)
+| id | First Name | Last Name | Employer | Name |
+| --- | --- | --- | --- |
+| 1 | John | Star | Star Systems |
+| 1 | John | Star | Star Systems |
+| 1 | John | Star | Endostar Company |
+| 2 | Linda | Det | Kartan |
+| ... | ... | ... | ... |
 
 ### Convert JSON object to table
 
@@ -209,7 +231,7 @@ Builds an arbitrary record from a JSON object (see note below). As with all func
 (record) jsonb_to_record (jsonb) as type
 ```
 
-Example:
+Example of using in join:
 
 ```sql
 select
@@ -222,11 +244,17 @@ from person as prs
 inner join lateral json_to_record(prs.person_data)
 	as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
 	on true
-;```
+;
+```
 
 Result set:
 
-![](images/json_to_record.PNG)
+| Id | Person Id | First Name | Last Name | Year of Birth |
+| --- | --- | --- | --- | --- |
+| 1 | lidsf90394 | John | Star | 1954 |
+| 2 | kuhasd83fdf | Linda | Det | 1964 |
+| 3 | 2039840f9du093 | Dick | Plat | 1955 |
+| ... | ... | ... | ... | ... |
 
 ### Convert JSON array to table
 
@@ -260,7 +288,12 @@ inner join lateral json_to_recordset(rec.employers)
 
 Result set:
 
-![](images/json_to_recordset.PNG)
+| Id | Person Id | First Name | Last Name | Year of Birth | Employer Name | Position | Start Year | End Year |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | lidsf90394 | John | Star | 1954 | Star Systems | Intern | 01/01/1970 | 12/31/1970 |
+| 1 | lidsf90394 | John | Star | 1954 | Star Systems | Junior Developer | 01/01/1971 | 01/01/1973 |
+| 1 | lidsf90394 | John | Star | 1954 | Endostar Company | Mid Developer | 02/01/1973 | 01/01/1978 |
+| ... | ... | ... | ... | ... | ... | ... | ... | ... |
 
 ### Modify JSON
 
