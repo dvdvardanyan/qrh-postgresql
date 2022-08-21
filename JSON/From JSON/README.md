@@ -120,6 +120,7 @@ inner join lateral json_each(prs.person_data)
 Result set:
 
 | id | key | value |
+| --- | --- | --- |
 | 1 | id | "lidsf90394" |
 | 1	first | "John" |
 | 1	last | "Star" |
@@ -143,6 +144,7 @@ inner join lateral json_each(prs.person_data)
 Result set:
 
 | id | key | value | index |
+| --- | --- | --- | --- |
 | 1 | id | "lidsf90394" | 1 |
 | 1	first | "John" | 2 |
 | 1	last | "Star" | 3 |
