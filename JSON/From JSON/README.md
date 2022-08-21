@@ -26,10 +26,10 @@ Example:
 
 ```
 select
-	prs.id,
-	prs.person_data ->> 'first' as "First Name",
-	prs.person_data ->> 'last' as "Last Name",
-	prs.person_data -> 'employers' -> 0 ->> 'name' as "First Employer"
+    prs.id,
+    prs.person_data ->> 'first' as "First Name",
+    prs.person_data ->> 'last' as "Last Name",
+    prs.person_data -> 'employers' -> 0 ->> 'name' as "First Employer"
 from person as prs
 where cast(prs.person_data -> 'dob' ->> 'year' as numeric) = 1954;
 ```
@@ -52,13 +52,14 @@ Example:
 
 ```sql
 select
-	prs.id,
-	json_extract_path_text(prs.person_data, 'dob', 'year') as "Date of Birth",
-	json_extract_path_text(prs.person_data, 'first') as "First Name",
-	json_extract_path_text(prs.person_data, 'last') as "Last Name",
-	json_extract_path_text(prs.person_data, 'employers', '0', 'name') as "First Employer"
+    prs.id,
+    json_extract_path_text(prs.person_data, 'dob', 'year') as "Date of Birth",
+    json_extract_path_text(prs.person_data, 'first') as "First Name",
+    json_extract_path_text(prs.person_data, 'last') as "Last Name",
+    json_extract_path_text(prs.person_data, 'employers', '0', 'name') as "First Employer"
 from person as prs
-where cast(json_extract_path_text(prs.person_data, 'dob', 'year') as numeric) > 1954;```
+where cast(json_extract_path_text(prs.person_data, 'dob', 'year') as numeric) > 1954;
+```
 
 Result set:
 
@@ -129,8 +130,8 @@ Example of using in join:
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value
 from person as prs
 inner join lateral json_each(prs.person_data)
-	as KeyValueOfJson(key, value)
-	on true;
+    as KeyValueOfJson(key, value)
+    on true;
 ```
 
 Result set:
@@ -151,9 +152,9 @@ Example of using in join with index:
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value, KeyValueOfJson.index
 from person as prs
 inner join lateral json_each(prs.person_data)
-	with ordinality
-	as KeyValueOfJson(key, value, index)
-	on true
+    with ordinality
+    as KeyValueOfJson(key, value, index)
+    on true
 ;
 ```
 
@@ -189,10 +190,10 @@ Example of using in select:
 
 ```sql
 select
-	prs.id,
-	prs.person_data ->> 'first' as "First Name",
-	prs.person_data ->> 'last' as "Last Name",
-	json_array_elements(prs.person_data -> 'employers') ->> 'name' as "Employer Name"
+    prs.id,
+    prs.person_data ->> 'first' as "First Name",
+    prs.person_data ->> 'last' as "Last Name",
+    json_array_elements(prs.person_data -> 'employers') ->> 'name' as "Employer Name"
 from person as prs;
 ```
 
@@ -200,15 +201,15 @@ Example of using in join with index:
 
 ```sql
 select
-	prs.id,
-	prs.person_data ->> 'first' as "First Name",
-	prs.person_data ->> 'last' as "Last Name",
-	emp.emd_data ->> 'name' as "Employer Name"
+    prs.id,
+    prs.person_data ->> 'first' as "First Name",
+    prs.person_data ->> 'last' as "Last Name",
+    emp.emd_data ->> 'name' as "Employer Name"
 from person as prs
 inner join lateral json_array_elements(prs.person_data -> 'employers')
-	with ordinality
-	as emp(emd_data, emp_index)
-	on true
+    with ordinality
+    as emp(emd_data, emp_index)
+    on true
 ;
 ```
 
@@ -235,15 +236,15 @@ Example of using in join:
 
 ```sql
 select
-	prs.id as "Id",
-	rec.id as "Person Id",
-	rec.first as "First Name",
-	rec.last as "Last Name",
-	rec.dob ->> 'year' as "Year of Birth"
+    prs.id as "Id",
+    rec.id as "Person Id",
+    rec.first as "First Name",
+    rec.last as "Last Name",
+    rec.dob ->> 'year' as "Year of Birth"
 from person as prs
 inner join lateral json_to_record(prs.person_data)
-	as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
-	on true
+    as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
+    on true
 ;
 ```
 
@@ -267,22 +268,22 @@ Example:
 
 ```sql
 select
-	prs.id as "Id",
-	rec.id as "Person Id",
-	rec.first as "First Name",
-	rec.last as "Last Name",
-	rec.dob ->> 'year' as "Year of Birth",
-	emp.name as "Employer Name",
-	emp.position as "Position",
-	emp.period ->> 'start' as "Start Year",
-	emp.period ->> 'end' as "End Year"
+    prs.id as "Id",
+    rec.id as "Person Id",
+    rec.first as "First Name",
+    rec.last as "Last Name",
+    rec.dob ->> 'year' as "Year of Birth",
+    emp.name as "Employer Name",
+    emp.position as "Position",
+    emp.period ->> 'start' as "Start Year",
+    emp.period ->> 'end' as "End Year"
 from person as prs
 inner join lateral json_to_record(prs.person_data)
-	as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
-	on true
+    as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
+    on true
 inner join lateral json_to_recordset(rec.employers)
-	as emp(name text, position text, period json)
-	on true
+    as emp(name text, position text, period json)
+    on true
 ;
 ```
 
@@ -307,8 +308,8 @@ Example:
 
 ```sql
 select
-	prs.id,
-	jsonb_set(prs.person_data_b, '{employers, 0, name}', '"The Employer"', false)
+    prs.id,
+    jsonb_set(prs.person_data_b, '{employers, 0, name}', '"The Employer"', false)
 from person as prs;
 ```
 
@@ -322,8 +323,8 @@ Example:
 
 ```sql
 select
-	prs.id,
-	jsonb_insert(prs.person_data_b, '{employers, 0}', '{ "name": "Bastil", "position": "Test", "period": { "start": "01/01/2000", "end": "12/31/2010" }}', false)
+    prs.id,
+    jsonb_insert(prs.person_data_b, '{employers, 0}', '{ "name": "Bastil", "position": "Test", "period": { "start": "01/01/2000", "end": "12/31/2010" }}', false)
 from person as prs;
 ```
 
@@ -335,20 +336,20 @@ Below query will update value inside a JSONB array for every aray element. It wi
 update person as prs
 set person_data_b = jsonb_set
 (
-	prs.person_data_b,
-	'{employers}',
-	(
-		--> Group rows back to array
-		select jsonb_agg(employers_aggregated.updated_employer) from (
-			--> Update each row from the extracted array
-			select jsonb_set(employers.employer, '{period, end}', to_jsonb(to_char(current_date, 'MM/DD/YYYY')), false) as updated_employer
-			from (
-				--> Extract the JSONB array
-				select jsonb_array_elements(prs.person_data_b -> 'employers') as employer
-			) as employers
-		) as employers_aggregated
-	),
-	false
+    prs.person_data_b,
+    '{employers}',
+    (
+        --> Group rows back to array
+        select jsonb_agg(employers_aggregated.updated_employer) from (
+            --> Update each row from the extracted array
+            select jsonb_set(employers.employer, '{period, end}', to_jsonb(to_char(current_date, 'MM/DD/YYYY')), false) as updated_employer
+            from (
+                --> Extract the JSONB array
+                select jsonb_array_elements(prs.person_data_b -> 'employers') as employer
+            ) as employers
+        ) as employers_aggregated
+    ),
+    false
 )
 where prs.id = 1;
 ```
