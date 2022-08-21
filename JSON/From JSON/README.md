@@ -215,7 +215,7 @@ inner join lateral json_array_elements(prs.person_data -> 'employers')
 
 Result set:
 
-| id | First Name | Last Name | Employer | Name |
+| id | First Name | Last Name | Employer Name |
 | --- | --- | --- | --- |
 | 1 | John | Star | Star Systems |
 | 1 | John | Star | Star Systems |
