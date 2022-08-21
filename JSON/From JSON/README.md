@@ -1,5 +1,9 @@
 # Parse JSON
 
+### Resources
+
+* [JSON Functions](https://www.postgresql.org/docs/12/functions-json.html)
+
 ### Get key/path value
 
 Get JSON object field by key or JSON array element (indexed from zero, negative integers count from the end)
@@ -107,12 +111,45 @@ Using implicit lateral join:
 
 ```sql
 select prs.id, KeyValueOfJson.key, KeyValueOfJson.value
-from person as prs, json_each(prs.person_data) as KeyValueOfJson;
+from person as prs
+inner join lateral json_each(prs.person_data)
+	as KeyValueOfJson(key, value)
+	on true;
 ```
 
 Result set:
 
-![](images/json_each.PNG)
+| id | key | value |
+| 1 | id | "lidsf90394" |
+| 1	first | "John" |
+| 1	last | "Star" |
+| ... | ... | ... |
+| 2 | id | "kuhasd83fdf" |
+| 2 | first | "Linda" |
+| ... | ... | ... |
+
+Using implicit lateral join with index:
+
+```sql
+select prs.id, KeyValueOfJson.key, KeyValueOfJson.value, KeyValueOfJson.index
+from person as prs
+inner join lateral json_each(prs.person_data)
+	with ordinality
+	as KeyValueOfJson(key, value, index)
+	on true
+;
+```
+
+Result set:
+
+| id | key | value | index |
+| 1 | id | "lidsf90394" | 1 |
+| 1	first | "John" | 2 |
+| 1	last | "Star" | 3 |
+| ... | ... | ... | ... |
+| 2 | id | "kuhasd83fdf" | 1 |
+| 2 | first | "Linda" | 2 |
+| ... | ... | ... | ... |
 
 ### Expand JSON array
 
@@ -148,8 +185,13 @@ select
 	prs.id,
 	prs.person_data ->> 'first' as "First Name",
 	prs.person_data ->> 'last' as "Last Name",
-	employers ->> 'name' as "Employer Name"
-from person as prs, json_array_elements(prs.person_data -> 'employers') as employers;
+	emp.emd_data ->> 'name' as "Employer Name"
+from person as prs
+inner join lateral json_array_elements(prs.person_data -> 'employers')
+	with ordinality
+	as emp(emd_data, emp_index)
+	on true
+;
 ```
 
 Result set:
@@ -174,9 +216,11 @@ select
 	rec.first as "First Name",
 	rec.last as "Last Name",
 	rec.dob ->> 'year' as "Year of Birth"
-from person as prs,
-json_to_record(prs.person_data) as rec(id text, first text, last text, dob json, dod json, employers json, addresses json);
-```
+from person as prs
+inner join lateral json_to_record(prs.person_data)
+	as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
+	on true
+;```
 
 Result set:
 
@@ -202,9 +246,14 @@ select
 	emp.position as "Position",
 	emp.period ->> 'start' as "Start Year",
 	emp.period ->> 'end' as "End Year"
-from person as prs,
-json_to_record(prs.person_data) as rec(id text, first text, last text, dob json, dod json, employers json, addresses json),
-json_to_recordset(rec.employers) as emp(name text, position text, period json);
+from person as prs
+inner join lateral json_to_record(prs.person_data)
+	as rec(id text, first text, last text, dob json, dod json, employers json, addresses json)
+	on true
+inner join lateral json_to_recordset(rec.employers)
+	as emp(name text, position text, period json)
+	on true
+;
 ```
 
 Result set:
