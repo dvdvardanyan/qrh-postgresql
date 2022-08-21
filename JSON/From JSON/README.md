@@ -24,7 +24,7 @@ Get JSON object at the specified path as TEXT
 
 Example:
 
-```
+```sql
 select
     prs.id,
     prs.person_data ->> 'first' as "First Name",
